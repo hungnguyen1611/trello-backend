@@ -1,0 +1,18 @@
+{
+  "name": "trello-api",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js"
+  },
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "async-exit-hook": "^2.0.1",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "mongodb": "^6.15.0",
+    "trello-api": "file:"
+  }
+}
