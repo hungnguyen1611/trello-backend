@@ -1,23 +1,24 @@
 require("module-alias/register");
 const express = require("express");
-const cors = require("cors");
-
-const { CONNECT_DB, CLOSE_DB } = require("./configs/mongodb");
-const exitHook = require("async-exit-hook");
-const { env } = require("./configs/environment");
-const { APIs_V1 } = require("./routes/v1");
 const {
-  errorHandlingMiddleware,
+  CONNECT_DB,
+  GET_DB,
+  CLOSE_DB
+} = require("./configs/mongodb");
+const exitHook = require("async-exit-hook");
+const {
+  env
+} = require("./configs/environment");
+const {
+  APIs_V1
+} = require("./routes/v1");
+const {
+  errorHandlingMiddleware
 } = require("./middlewares/ErrorsHandlingMiddlewares");
-const { corsOptions } = require("./configs/cors");
-
 const START_SERVER = () => {
   const app = express();
   // Enable req.body json data
   app.use(express.json());
-  //  Xử lí cors
-  app.use(cors(corsOptions));
-
   app.use(errorHandlingMiddleware);
 
   // chỉ nên gọi GETDB trong start để đạm bảo đã connect succesed đến db
@@ -28,16 +29,10 @@ const START_SERVER = () => {
   // });
 
   app.use("/v1", APIs_V1);
-
-  app.listen(env.APP_PORT, env.APP_HOST, () =>
-    console.log(
-      `3 Hi ${process.env.AUTHOR} BackEnd is running successfully http://${env.APP_HOST}:${env.APP_PORT}`
-    )
-  );
-
+  app.listen(env.APP_PORT, env.APP_HOST, () => console.log(`3 Hi ${process.env.AUTHOR} BackEnd is running successfully http://${env.APP_HOST}:${env.APP_PORT}`));
   exitHook(() => {
     CLOSE_DB();
-    ("5 Disconnected from Mongo cloud Atlas ");
+    "5 Disconnected from Mongo cloud Atlas ";
   });
 };
 
@@ -45,7 +40,6 @@ const START_SERVER = () => {
 
 (async () => {
   console.log("1. Connecting mongo cloud atlas");
-
   try {
     await CONNECT_DB();
     console.log("2. Connected to mongoDB cloud atlas!");

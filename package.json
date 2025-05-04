@@ -3,16 +3,37 @@
   "type": "commonjs",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node src/server.js"
+    "clean": "rm -rf build && mkdir build",
+    "build": "npm run clean && npm run build-babel",
+    "build-babel": "babel ./src -d ./build/src",
+    "production": "npm run build && cross-env BUILD_MODE=production node ./build/src/server.js",
+    "dev": "cross-env BUILD_MODE=dev node src/server.js"
+  },
+  "_moduleAliases": {
+    "@": "src"
   },
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
     "async-exit-hook": "^2.0.1",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
+    "http-status-codes": "^2.3.0",
+    "joi": "^17.13.3",
+    "lodash": "^4.17.21",
+    "module-alias": "^2.2.3",
     "mongodb": "^6.15.0",
     "trello-api": "file:"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.27.0",
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@eslint/js": "^9.24.0",
+    "eslint": "^9.24.0",
+    "globals": "^16.0.0"
   }
 }
