@@ -22,18 +22,28 @@ const mongoClientInstance = new MongoClient(
     },
   }
 );
-let trelloDB = null;
+// let trelloDB = null;
+
+const trelloDB = {};
 
 const CONNECT_DB = async () => {
-  await mongoClientInstance.connect();
-  trelloDB = mongoClientInstance.db(env.DATABASE_NAME);
+  try {
+    const connect = await mongoClientInstance.connect();
+    console.log("🚀 ~ constCONNECT_DB= ~ connect:", connect);
+    console.log("Đã connect mongo");
+
+    trelloDB.data = mongoClientInstance.db(env.DATABASE_NAME);
+    console.log("🚀 ~ constCONNECT_DB= ~ trelloDB.data:", trelloDB.data);
+  } catch (error) {
+    throw new Error(error);
+  }
 };
 
 const GET_DB = () => {
-  if (!trelloDB)
-    throw new Error(`Must connect to Mongo first! trelloDB: ${trelloDB}`);
+  if (!trelloDB.data)
+    throw new Error(`Must connect to Mongo first! trelloDB: ${trelloDB.data}`);
 
-  return trelloDB;
+  return trelloDB.data;
 };
 
 const CLOSE_DB = async () => {
