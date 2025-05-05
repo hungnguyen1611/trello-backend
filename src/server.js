@@ -18,8 +18,6 @@ const START_SERVER = () => {
   //  Xử lí cors
   app.use(cors(corsOptions));
 
-  app.use(errorHandlingMiddleware);
-
   // chỉ nên gọi GETDB trong start để đạm bảo đã connect succesed đến db
   // app.get("/", async (req, res) => {
   //   const data = await GET_DB().listCollections().toArray();
@@ -28,6 +26,8 @@ const START_SERVER = () => {
   // });
 
   app.use("/v1", APIs_V1);
+
+  app.use(errorHandlingMiddleware);
 
   if (env.BUILD_MODE === "production") {
     app.listen(process.env.PORT, () => {
