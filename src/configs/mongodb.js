@@ -11,8 +11,6 @@ const { env } = require("./environment");
 
 // mongodb+srv://hungnguyen1611:t0MEeTPxw8RBEmII@cluster0hungnguyen.grqzhii.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0hungnguyen
 
-let trelloDB = null;
-
 const mongoClientInstance = new MongoClient(
   env.MONGODB_URI,
 
@@ -24,6 +22,7 @@ const mongoClientInstance = new MongoClient(
     },
   }
 );
+let trelloDB = null;
 
 const CONNECT_DB = async () => {
   await mongoClientInstance.connect();
@@ -31,9 +30,8 @@ const CONNECT_DB = async () => {
 };
 
 const GET_DB = () => {
-  if (!trelloDB) throw new Error("Must connect to Mongo first!");
-
-  console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
+  if (!trelloDB)
+    throw new Error(`Must connect to Mongo first! trelloDB: ${trelloDB}`);
 
   return trelloDB;
 };
