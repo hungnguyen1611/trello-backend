@@ -51,15 +51,29 @@ const START_SERVER = () => {
 
 //  Chỉ khi kết nối đến database thành công thì mới start backend
 
-(async () => {
-  console.log("1. Connecting mongo cloud atlas");
+// (async () => {
+//   console.log("1. Connecting mongo cloud atlas");
 
+//   try {
+//     await CONNECT_DB();
+//     console.log("2. Connected to mongoDB cloud atlas!");
+//     START_SERVER();
+//   } catch (error) {
+//     console.error(error), process.exit(0);
+//   }
+// })();
+
+(async () => {
   try {
-    await CONNECT_DB();
-    console.log("2. Connected to mongoDB cloud atlas!");
+    await CONNECT_DB(); // Kết nối DB trước
+
+    console.log("✅ MongoDB connected successfully!");
+
+    // Khởi động Express hoặc các phần khác sau khi kết nối DB xong
     START_SERVER();
   } catch (error) {
-    console.error(error), process.exit(0);
+    console.error("❌ Cannot connect to MongoDB:", error);
+    process.exit(1);
   }
 })();
 
