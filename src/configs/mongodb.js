@@ -33,6 +33,8 @@ const CONNECT_DB = async () => {
 const GET_DB = () => {
   if (!trelloDB) throw new Error("Must connect to Mongo first!");
 
+  console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
+
   return trelloDB;
 };
 
