@@ -16,14 +16,20 @@ const CONNECT_DB = async () => {
     await mongoClientInstance.connect();
     trelloDB = mongoClientInstance.db(env.DATABASE_NAME);
     console.log("✅ CONNECT_DB: Kết nối MongoDB thành công!");
+    console.log("🚀 ~ constCONNECT_DB= ~ trelloDB:", trelloDB);
   } catch (error) {
     throw new Error("❌ CONNECT_DB ERROR: " + error);
   }
 };
 
 const GET_DB = () => {
-  if (!trelloDB)
+  if (!trelloDB) {
+    console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
+
     throw new Error(`❌ Must connect to Mongo first! trelloDB: ${trelloDB}`);
+  }
+
+  console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
 
   return trelloDB;
 };
