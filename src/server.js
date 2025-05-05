@@ -29,11 +29,19 @@ const START_SERVER = () => {
 
   app.use("/v1", APIs_V1);
 
-  app.listen(env.APP_PORT, env.APP_HOST, () =>
-    console.log(
-      `3 Hi ${process.env.AUTHOR} BackEnd is running successfully http://${env.APP_HOST}:${env.APP_PORT}`
-    )
-  );
+  if (env.BUILD_MODE === "production") {
+    app.listen(process.env.PORT, () => {
+      console.log(
+        `3 Production: Hi ${process.env.AUTHOR} BackEnd is running successfully at Port ${process.env.PORT}`
+      );
+    });
+  } else {
+    app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () =>
+      console.log(
+        `3 Local: Hi ${process.env.AUTHOR} BackEnd is running successfully http://${env.LOCAL_DEV_APP_PORT}:${env.LOCAL_DEV_APP_HOST}`
+      )
+    );
+  }
 
   exitHook(() => {
     CLOSE_DB();

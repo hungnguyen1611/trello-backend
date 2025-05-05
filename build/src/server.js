@@ -1,19 +1,11 @@
 require("module-alias/register");
 const express = require("express");
-const {
-  CONNECT_DB,
-  GET_DB,
-  CLOSE_DB
-} = require("./configs/mongodb");
+const { CONNECT_DB, GET_DB, CLOSE_DB } = require("./configs/mongodb");
 const exitHook = require("async-exit-hook");
+const { env } = require("./configs/environment");
+const { APIs_V1 } = require("./routes/v1");
 const {
-  env
-} = require("./configs/environment");
-const {
-  APIs_V1
-} = require("./routes/v1");
-const {
-  errorHandlingMiddleware
+  errorHandlingMiddleware,
 } = require("./middlewares/ErrorsHandlingMiddlewares");
 const START_SERVER = () => {
   const app = express();
@@ -29,10 +21,14 @@ const START_SERVER = () => {
   // });
 
   app.use("/v1", APIs_V1);
-  app.listen(env.APP_PORT, env.APP_HOST, () => console.log(`3 Hi ${process.env.AUTHOR} BackEnd is running successfully http://${env.APP_HOST}:${env.APP_PORT}`));
+  app.listen(env.APP_PORT, env.LOCAL_DEV_APP_HOST, () =>
+    console.log(
+      `3 Hi ${process.env.AUTHOR} BackEnd is running successfully http://${env.APP_HOST}:${env.APP_PORT}`
+    )
+  );
   exitHook(() => {
     CLOSE_DB();
-    "5 Disconnected from Mongo cloud Atlas ";
+    ("5 Disconnected from Mongo cloud Atlas ");
   });
 };
 
