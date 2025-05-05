@@ -6,14 +6,18 @@ const { env } = require("./environment");
 const corsOptions = {
   origin: function (origin, callback) {
     // Cho phép Postman hoặc server khác trong môi trường dev
-    if (env.BUILD_MODE === "dev" && !origin) {
+    if (env.BUILD_MODE === "dev") {
+      return callback(null, true);
+    }
+
+    if (env.BUILD_MODE === "production") {
       return callback(null, true);
     }
 
     // Chỉ cho phép các domain được whitelist
-    if (WHITELIST_DOMAINS.includes(origin)) {
-      return callback(null, true);
-    }
+    // if (WHITELIST_DOMAINS.includes(origin)) {
+    //   return callback(null, true);
+    // }
 
     // Còn lại từ chối
     return callback(
