@@ -30,15 +30,19 @@ const START_SERVER = () => {
   app.use(errorHandlingMiddleware);
 
   if (env.BUILD_MODE === "production") {
-    app.listen(process.env.PORT, () => {
+    const PORT = process.env.PORT || 5000;
+
+    app.listen(PORT, () => {
       console.log(
-        `3 Production: Hi ${process.env.AUTHOR} BackEnd is running successfully at Port ${process.env.PORT}`
+        `✅ BackEnd is running at Port ${PORT} — Hello ${
+          process.env.AUTHOR || "Developer"
+        }!`
       );
     });
   } else {
     app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () =>
       console.log(
-        `3 Local: Hi ${process.env.AUTHOR} BackEnd is running successfully http://${env.LOCAL_DEV_APP_PORT}:${env.LOCAL_DEV_APP_HOST}`
+        `3 Local: Hi ${process.env.AUTHOR} BackEnd is running successfully http://${env.LOCAL_DEV_APP_HOST}:${env.LOCAL_DEV_APP_PORT}`
       )
     );
   }
