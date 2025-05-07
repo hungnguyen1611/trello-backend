@@ -14,7 +14,7 @@ let trelloDB = null;
 const CONNECT_DB = async () => {
   try {
     await mongoClientInstance.connect();
-    trelloDB = mongoClientInstance.db(env.DATABASE_NAME);
+    trelloDB = mongoClientInstance.db("trello");
     console.log("✅ CONNECT_DB: Kết nối MongoDB thành công!");
   } catch (error) {
     throw new Error("❌ CONNECT_DB ERROR: " + error);
