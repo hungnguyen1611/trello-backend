@@ -14,26 +14,18 @@ let trelloDB = null;
 const CONNECT_DB = async () => {
   try {
     await mongoClientInstance.connect();
-    trelloDB = mongoClientInstance.db("trello");
+    trelloDB = mongoClientInstance.db(env.DATABASE_NAME);
     console.log("✅ CONNECT_DB: Kết nối MongoDB thành công!");
   } catch (error) {
     throw new Error("❌ CONNECT_DB ERROR: " + error);
   }
 };
 
-// const GET_DB = () => {
-//   if (!trelloDB) {
-//     console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
-
-//     throw new Error(`Must connect to Mongo first!`);
-//   }
-
-//   return trelloDB;
-// };
-
 const GET_DB = () => {
   if (!trelloDB) {
-    const DB = mongoClientInstance.db("trello");
+    // gọi lại 1 lần ở đây để nhận được db vì khi đẩy lên production(render) trelloDB sẽ bị null
+    const DB = mongoClientInstance.db(env.DATABASE_NAME);
+    if (!DB) throw new Error(`Must connect to Mongo first!`);
     return DB;
   }
   return trelloDB;
