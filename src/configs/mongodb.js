@@ -21,16 +21,29 @@ const CONNECT_DB = async () => {
   }
 };
 
-const GET_DB = () => {
+const dbReady = (async () => {
+  await mongoClientInstance.connect();
+  trelloDB = mongoClientInstance.db("trello");
+  console.log("✅ Mongo connected");
+  return trelloDB;
+})();
+
+// const GET_DB = () => {
+//   if (!trelloDB) {
+//     console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
+
+//     throw new Error(`Must connect to Mongo first!`);
+//   }
+
+//   return trelloDB;
+// };
+
+const GET_DB = async () => {
   if (!trelloDB) {
-    console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
-
-    throw new Error(`Must connect to Mongo first!`);
+    await dbReady; // đợi kết nối nếu chưa có
   }
-
   return trelloDB;
 };
-
 const CLOSE_DB = async () => {
   console.log("4 Disconnecting from Mongo cloud Atlas !");
   await mongoClientInstance.close();
