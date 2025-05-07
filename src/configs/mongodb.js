@@ -21,13 +21,6 @@ const CONNECT_DB = async () => {
   }
 };
 
-const dbReady = (async () => {
-  await mongoClientInstance.connect();
-  trelloDB = mongoClientInstance.db("trello");
-  console.log("✅ Mongo connected");
-  return trelloDB;
-})();
-
 // const GET_DB = () => {
 //   if (!trelloDB) {
 //     console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
@@ -38,9 +31,10 @@ const dbReady = (async () => {
 //   return trelloDB;
 // };
 
-const GET_DB = async () => {
+const GET_DB = () => {
   if (!trelloDB) {
-    await dbReady; // đợi kết nối nếu chưa có
+    const DB = mongoClientInstance.db("trello");
+    return DB;
   }
   return trelloDB;
 };
