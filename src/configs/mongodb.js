@@ -5,18 +5,17 @@ const mongoClientInstance = new MongoClient(env.MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
-    deprecationErrors: true, // ✅ sửa chính tả
+    deprecationErrors: true,
   },
 });
 
-let trelloDB = null; // ✅ dùng let để cho phép gán lại
+let trelloDB = null;
 
 const CONNECT_DB = async () => {
   try {
     await mongoClientInstance.connect();
     trelloDB = mongoClientInstance.db(env.DATABASE_NAME);
     console.log("✅ CONNECT_DB: Kết nối MongoDB thành công!");
-    console.log("🚀 ~ constCONNECT_DB= ~ trelloDB:", trelloDB);
   } catch (error) {
     throw new Error("❌ CONNECT_DB ERROR: " + error);
   }
@@ -26,10 +25,8 @@ const GET_DB = () => {
   if (!trelloDB) {
     console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
 
-    throw new Error(`❌ Must connect to Mongo first! trelloDB: ${trelloDB}`);
+    throw new Error(`Must connect to Mongo first!`);
   }
-
-  console.log("🚀 ~ constGET_DB= ~ trelloDB:", trelloDB);
 
   return trelloDB;
 };
