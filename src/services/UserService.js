@@ -8,6 +8,7 @@ const { WEBSITE_DOMAIN } = require("@/utils/constant");
 const { BrevoProvider } = require("@/provider/BrevoProvider");
 const { JwtProvider } = require("@/provider/JwtProvider");
 const { env } = require("@/configs/environment");
+const { CloudinaryProvider } = require("@/provider/CloudinaryProvider");
 
 const createUser = async (reqBody) => {
   try {
@@ -48,7 +49,7 @@ const createUser = async (reqBody) => {
 `;
     // gọi tới provider gửi mail
     // Gửi email cho người dùng xác thực tài khoản
-    // await BrevoProvider.sendEmail(getNewUser.email, customSubject, htmlContent);
+    await BrevoProvider.sendEmail(getNewUser.email, customSubject, htmlContent);
 
     // return trả về dữ liệu cho controller
     return pickUser(getNewUser);
@@ -159,11 +160,64 @@ const refreshToken = async (clientRefreshToken) => {
     throw error;
   }
 };
+
+const update = async (userId, reqBody, userAvatarFile) => {
+  try {
+    const existUser = await userModel.findOneById(userId);
+    if (!existUser)
+      throw new ApiError(StatusCodes.NOT_FOUND, "Account not found");
+    if (!existUser.isActive)
+      throw new ApiError(
+        StatusCodes.NOT_ACCEPTABLE,
+        "Your account is not active"
+      );
+
+    let updatedUser = {};
+    // Trường hợp thay đổi passworđ
+    if (reqBody.current_password && reqBody.new_password) {
+      // Kiểm tra current_password có đúng không?
+      if (!bcrypt.compareSync(reqBody.current_password, existUser.password)) {
+        throw ApiError(
+          StatusCodes.NOT_ACCEPTABLE,
+          "Current password is not incorrect !"
+        );
+      }
+      updatedUser = await userModel.update(userId, {
+        password: bcrypt.hashSync(reqBody.new_password, 8),
+        updatedAt: Date.now(),
+      });
+      return updatedUser;
+      // Trường hợp upload file lên cloud store (Cloudinary)
+    } else if (userAvatarFile) {
+      const uploadResult = await CloudinaryProvider.streamUpload(
+        userAvatarFile.buffer,
+        "users"
+      );
+      // Lưu lại url vào database
+      updatedUser = await userModel.update(userId, {
+        avatar: uploadResult.secure_url,
+        updatedAt: Date.now(),
+      });
+
+      // Trường hợp thay đổi thông tin chung
+    } else {
+      updatedUser = await userModel.update(userId, {
+        ...reqBody,
+        updatedAt: Date.now(),
+      });
+    }
+
+    return pickUser(updatedUser);
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   userService: {
     createUser,
     verifyAccount,
     login,
     refreshToken,
+    update,
   },
 };

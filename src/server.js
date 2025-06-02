@@ -12,6 +12,11 @@ const {
 const { corsOptions } = require("./configs/cors");
 const cookieParser = require("cookie-parser");
 
+// Xử lí socket real-time với soket.io
+const socketIo = require("socket.io");
+const http = require("http");
+const inviUserToBoardSocket = require("./socket/inviUserToBoardSocket");
+
 const START_SERVER = () => {
   const app = express();
 
@@ -41,11 +46,21 @@ const START_SERVER = () => {
 
   app.use(errorHandlingMiddleware);
 
+  // Tạo một Sever mới bọc thằng app của express để làm real-time với socket.io
+  const server = http.createServer(app);
+  // Khởi tạo biến io với server và cors
+  const io = socketIo(server, { cors: corsOptions });
+
+  io.on("connection", (socket) => {
+    // Gọi gác socket tùy theo tính năng ở đây
+    inviUserToBoardSocket(socket);
+  });
+
   if (env.BUILD_MODE === "production") {
     // process.env.PORT, PORT ở đây sau khi đây lên production sẽ có PORT của bên render cx có thể tự cấu hình
     const PORT = process.env.PORT || 5000;
-
-    app.listen(PORT, () => {
+    //  Dùng server.listen thay thế app.listen vì lúc này server đã bao gồm express app và đã config  socket.io
+    server.listen(PORT, () => {
       console.log(
         `✅ BackEnd is running at Port ${PORT} — Hello ${
           process.env.AUTHOR || "Developer"
@@ -53,7 +68,7 @@ const START_SERVER = () => {
       );
     });
   } else {
-    app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () =>
+    server.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () =>
       console.log(
         `3 Local: Hi ${process.env.AUTHOR} BackEnd is running successfully http://${env.LOCAL_DEV_APP_HOST}:${env.LOCAL_DEV_APP_PORT}`
       )

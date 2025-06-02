@@ -8,12 +8,12 @@ const { StatusCodes } = require("http-status-codes");
 const Router = express.Router();
 
 Router.route("/")
-  .get(authMiddleware.isAuthorized, (req, res) => {
-    res
-      .status(StatusCodes.OK)
-      .json({ message: "GET: Api get list board", code: StatusCodes.OK });
-  })
-  .post(BoardValidation.createNew, BoardController.createNew);
+  .get(authMiddleware.isAuthorized, BoardController.getBoards)
+  .post(
+    authMiddleware.isAuthorized,
+    BoardValidation.createNew,
+    BoardController.createNew
+  );
 
 Router.route("/:id")
   .get(authMiddleware.isAuthorized, BoardController.getDetails)

@@ -23,7 +23,7 @@ const USER_COLLECTION_SCHEMA = Joi.object({
   isActive: Joi.boolean().default(false),
   verifyToken: Joi.string(),
   createdAt: Joi.date().timestamp("javascript").default(Date.now),
-  update: Joi.date().timestamp("javascript").default(null),
+  updatedAt: Joi.date().timestamp("javascript").default(null),
   destroy: Joi.boolean().default(false),
 });
 
@@ -48,11 +48,13 @@ const createUser = async (data) => {
 };
 
 const findOneById = async (userId) => {
+  // console.log("🚀 ~ findOneById ~ userId:", userId);
+
   try {
     const result = await GET_DB()
       .collection(USER_COLLECTION_NAME)
       .findOne({
-        _id: ObjectId.createFromHexString(userId),
+        _id: ObjectId.createFromHexString(userId.toString()),
       });
     return result;
   } catch (error) {
@@ -101,6 +103,7 @@ const update = async (userId, dataUpdate) => {
 };
 module.exports = {
   userModel: {
+    USER_COLLECTION_NAME,
     createUser,
     createUser,
     findOneById,

@@ -83,6 +83,22 @@ const refresh_token = async (req, res, next) => {
     );
   }
 };
+
+const update = async (req, res, next) => {
+  try {
+    const userAvatarFile = req.file;
+    // console.log("🚀 ~ update ~ avatarFile:", avatarFile);
+    const userId = req.jwtDecoded._id;
+    const updatedUser = await userService.update(
+      userId,
+      req.body,
+      userAvatarFile
+    );
+    res.status(StatusCodes.OK).json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
 module.exports = {
   userController: {
     createUser,
@@ -90,5 +106,6 @@ module.exports = {
     login,
     logout,
     refresh_token,
+    update,
   },
 };

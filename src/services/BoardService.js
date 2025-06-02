@@ -2,11 +2,12 @@ const { BoardModal } = require("@/models/BoardModel");
 const { CardModel } = require("@/models/CardModel");
 const { ColumnModel } = require("@/models/ColumnModel");
 const ApiError = require("@/utils/ApiError");
+const { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } = require("@/utils/constant");
 const { slugify } = require("@/utils/formatters");
 const { StatusCodes } = require("http-status-codes");
 const { cloneDeep } = require("lodash");
 
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
     const newData = {
       ...data,
@@ -18,7 +19,7 @@ const createNew = async (data) => {
     //  Làm thêm các xử lí khác với các Collection khác tùy vào dự án
     // Bắn email, notification về cho admin khi có boar mới được tạo
 
-    const newBoard = await BoardModal.newModal(newData);
+    const newBoard = await BoardModal.newBoard(userId, newData);
     const getNewBoard = await BoardModal.findOneById(
       newBoard.insertedId.toString()
     );
@@ -28,10 +29,10 @@ const createNew = async (data) => {
   }
 };
 
-const getDetail = async (boardId) => {
+const getDetail = async (userId, boardId) => {
   // eslint-disable-next-line no-useless-catch
   try {
-    const board = await BoardModal.getDetail(boardId);
+    const board = await BoardModal.getDetail(userId, boardId);
 
     if (!board) {
       throw new ApiError(StatusCodes.NOT_FOUND, "Board not found");
@@ -101,11 +102,29 @@ const moveCardToDifferentColumn = async (reqBody) => {
   }
 };
 
+const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
+  try {
+    if (!page) page = DEFAULT_PAGE;
+    if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
+
+    const result = await BoardModal.getBoards(
+      userId,
+      parseInt(page, 10),
+      parseInt(itemsPerPage, 10),
+      queryFilters
+    );
+
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   BoardService: {
     createNew,
     getDetail,
     update,
     moveCardToDifferentColumn,
+    getBoards,
   },
 };

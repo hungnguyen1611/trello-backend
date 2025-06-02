@@ -52,6 +52,8 @@ const update = async (req, res, next) => {
       Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
     ),
   });
+  // allowUnknown: true: Cho phép object chứa các key không được định nghĩa trong schema.
+  // abortEarly: false: Joi sẽ tiếp tục kiểm tra toàn bộ schema → trả về tất cả các lỗi nếu có.
 
   try {
     await correctCondition.validateAsync(req.body, {

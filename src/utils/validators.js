@@ -8,6 +8,9 @@ const PASSWORD_RULE = /^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d\W]{8,256}$/;
 const PASSWORD_RULE_MESSAGE =
   "Password must include at least 1 letter, a number, and at least 8 characters.";
 
+const LIMIT_COMMON_FILE_SIZE = 10485760; // byte = 10 MB
+const ALLOW_COMMON_FILE_TYPES = ["image/jpg", "image/jpeg", "image/png"];
+
 module.exports = {
   OBJECT_ID_RULE,
   OBJECT_ID_RULE_MESSAGE,
@@ -15,4 +18,6 @@ module.exports = {
   EMAIL_RULE_MESSAGE,
   PASSWORD_RULE,
   PASSWORD_RULE_MESSAGE,
+  LIMIT_COMMON_FILE_SIZE,
+  ALLOW_COMMON_FILE_TYPES,
 };

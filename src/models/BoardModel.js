@@ -8,6 +8,9 @@ const { ObjectId, ReturnDocument } = require("mongodb");
 const { BOARD_TYPE } = require("@/utils/constant");
 const { ColumnModel } = require("./ColumnModel");
 const { CardModel } = require("./CardModel");
+const ApiError = require("@/utils/ApiError");
+const { pagingSkipValue } = require("@/utils/algorithms");
+const { userModel } = require("./UserModel");
 const BOARD_COLLECTION_NAME = "boards";
 const BOARD_COLLECTION_SCHEMA = Joi.object({
   title: Joi.string().required().min(3).max(50).trim().strict(),
@@ -16,6 +19,16 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   type: Joi.string().valid(BOARD_TYPE.PRIVATE, BOARD_TYPE.PUBLIC).required(),
 
   columnOrderIds: Joi.array()
+    .items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
+    .default([]),
+
+  // Admin của board
+  ownerIds: Joi.array()
+    .items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
+    .default([]),
+
+  // Thành viên của board
+  memberIds: Joi.array()
     .items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
     .default([]),
   createAt: Joi.date().timestamp("javascript").default(Date.now),
@@ -32,12 +45,16 @@ const validateBeforeCreate = async (data) => {
   });
 };
 
-const newModal = async (data) => {
+const newBoard = async (userId, data) => {
   try {
     const validateData = await validateBeforeCreate(data);
+    const newBoard = {
+      ...validateData,
+      ownerIds: [ObjectId.createFromHexString(userId)],
+    };
     const createBoard = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
-      .insertOne(validateData);
+      .insertOne(newBoard);
     return createBoard;
   } catch (error) {
     throw new Error(error);
@@ -54,8 +71,20 @@ const findOneById = async (id) => {
 };
 
 //  Querry tổng hợp (agreegate) để lấy toàn bộ columns và cards thuộc về board
-const getDetail = async (id) => {
+const getDetail = async (userId, boardId) => {
   try {
+    const queryConditions = [
+      // Board chưa bị xóa
+      { _id: ObjectId.createFromHexString(boardId) },
+      { _destroy: false },
+      // User đang request phải thuộc 1 trong 2 cái mảng là ownerIds hoặc memberIds( sử dụng toán tử $All của mongo)
+      {
+        $or: [
+          { ownerIds: { $all: [ObjectId.createFromHexString(userId)] } },
+          { memberIds: { $all: [ObjectId.createFromHexString(userId)] } },
+        ],
+      },
+    ];
     //   // ObjectId.createFromHexString chuyển chuỗi hexa sang object id
     //   .findOne({ _id: ObjectId.createFromHexString(id) });
 
@@ -64,8 +93,7 @@ const getDetail = async (id) => {
       .aggregate([
         {
           $match: {
-            _id: ObjectId.createFromHexString(id),
-            _destroy: false,
+            $and: queryConditions,
           },
         },
         {
@@ -82,6 +110,27 @@ const getDetail = async (id) => {
             localField: "_id",
             foreignField: "boardId",
             as: "cards",
+          },
+        },
+
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: "ownerIds",
+            foreignField: "_id",
+            as: "owners",
+            // pipeline trong lookup là để xử lý một hoặc nhiều luồng cần thiết
+            // $project để chỉ định vài field không muốn lấy về bằng cách gán nó giá trị 0
+            pipeline: [{ $project: { password: 0, verifyToken: 0 } }],
+          },
+        },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: "memberIds",
+            foreignField: "_id",
+            as: "members",
+            pipeline: [{ $project: { password: 0, verifyToken: 0 } }],
           },
         },
       ])
@@ -102,7 +151,9 @@ const pushColumnOrderIds = async (column) => {
           _id: column.boardId,
         },
         {
-          $push: { columnOrderIds: column._id },
+          $push: {
+            columnOrderIds: ObjectId.createFromHexString(column._id.toString()),
+          },
         },
         {
           returnDocument: "after",
@@ -172,15 +223,121 @@ const update = async (boardId, data) => {
     throw new Error(error);
   }
 };
+
+const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
+  try {
+    const queryConditions = [
+      // Board chưa bị xóa
+      { _destroy: false },
+      // User đang request phải thuộc 1 trong 2 cái mảng là ownerIds hoặc memberIds( sử dụng toán tử $All của mongo)
+      {
+        $or: [
+          { ownerIds: { $all: [ObjectId.createFromHexString(userId)] } },
+          { memberIds: { $all: [ObjectId.createFromHexString(userId)] } },
+        ],
+      },
+    ];
+
+    // Process query filter for each search board case
+    if (queryFilters) {
+      Object.keys(queryFilters).forEach((key) => {
+        // Case sensitive
+        // queryConditions.push({
+        //   [key]: { $regex: queryFilters[key] },
+        // });
+        // case insensitive
+        queryConditions.push({
+          [key]: { $regex: new RegExp(queryFilters[key], "i") },
+        });
+      });
+    }
+
+    const query = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .aggregate(
+        [
+          {
+            $match: {
+              $and: queryConditions,
+            },
+          },
+          // sort title của board theo A_Z (mặc định sẽ bị chữ B hoa đứng trước chữ a thường (theo chuẩn bảng mã ASCII => sẽ cần fix)
+          {
+            $sort: { title: 1 },
+
+            // facet để xử lí nhiều luồng trong một query
+          },
+          {
+            $facet: {
+              // Luồng 01: Query boards
+              // queryBoards tên luồng tự đặt
+              queryBoards: [
+                {
+                  // Bỏ qua số lượng bảng ghi của những page trước đó
+                  $skip: pagingSkipValue(page, itemsPerPage),
+                },
+                {
+                  // Giới hạn tối đa số lượng bảng ghi trả về trên một page
+                  $limit: itemsPerPage,
+                },
+              ],
+
+              // Luồng 02: Query tổng số lượng boards trong DB và trả về biến
+              // queryTotalBoards tên luồng tự đặt
+              // countedAllBoards tên biến sau khi toán tử count trả về
+              queryTotalBoards: [{ $count: "countedAllBoards" }],
+            },
+          },
+        ],
+        {
+          // Khai báo thêm để fix vụ chữ B hoa và a thường ở trên
+          collation: { locale: "en" },
+        }
+      )
+      .toArray();
+
+    const res = query[0];
+    return {
+      boards: res.queryBoards || [],
+      totalBoards: res.queryTotalBoards[0]?.countedAllBoards || 0,
+    };
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const pushMemberIds = async (boardId, userId) => {
+  try {
+    const result = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        {
+          _id: ObjectId.createFromHexString(boardId),
+        },
+        {
+          $push: { memberIds: ObjectId.createFromHexString(userId) },
+        },
+        {
+          returnDocument: "after",
+        }
+      );
+
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 module.exports = {
   BoardModal: {
     BOARD_COLLECTION_NAME,
     BOARD_COLLECTION_SCHEMA,
-    newModal,
+    newBoard,
     findOneById,
     getDetail,
     pushColumnOrderIds,
     update,
     pullColumnOrderIds,
+    getBoards,
+    pushMemberIds,
   },
 };

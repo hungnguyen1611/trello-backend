@@ -4,6 +4,7 @@ const { BoardRoute } = require("./BoardRoutes");
 const { ColumnRoute } = require("./ColumnRoute");
 const { CardRoute } = require("./CardRoute");
 const { userRoute } = require("./userRoutes");
+const { invitationRoute } = require("./invitationRoutes");
 
 const Router = express.Router();
 
@@ -17,6 +18,7 @@ Router.use("/boards", BoardRoute);
 Router.use("/columns", ColumnRoute);
 Router.use("/cards", CardRoute);
 Router.use("/users", userRoute);
+Router.use("/invitations", invitationRoute);
 
 module.exports = {
   APIs_V1: Router,
