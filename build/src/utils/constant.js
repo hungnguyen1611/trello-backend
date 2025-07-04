@@ -1,7 +1,7 @@
 const {
   env
 } = require("@/configs/environment");
-const WHITELIST_DOMAINS = ["https://trello-web-git-master-hungnguyen1611s-projects.vercel.app", "https://www.hungnguyen1611.online"];
+const WHITELIST_DOMAINS = ["https://trello-web-flame.vercel.app", "https://www.hungnguyen1611.online", "http://192.168.0.198"];
 const BOARD_TYPE = {
   PUBLIC: "public",
   PRIVATE: "private"
