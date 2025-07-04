@@ -48,8 +48,8 @@ const START_SERVER = () => {
   app.use(errorHandlingMiddleware);
 
   const sslOptions = {
-    key: fs.readFileSync("/path/to/key.pem"),
-    cert: fs.readFileSync("/path/to/cert.pem"),
+    key: fs.readFileSync("/cert.pem"), //private key
+    cert: fs.readFileSync("/key.pem"), //chứng chỉ SSL (certificate)
   };
   // Tạo một Sever mới bọc thằng app của express để làm real-time với socket.io
   const server = http.createServer(sslOptions, app);
