@@ -1,6 +1,7 @@
 require("module-alias/register");
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs");
 
 const { CONNECT_DB, CLOSE_DB } = require("./configs/mongodb");
 const exitHook = require("async-exit-hook");
@@ -46,8 +47,12 @@ const START_SERVER = () => {
 
   app.use(errorHandlingMiddleware);
 
+  const sslOptions = {
+    key: fs.readFileSync("/path/to/key.pem"),
+    cert: fs.readFileSync("/path/to/cert.pem"),
+  };
   // Tạo một Sever mới bọc thằng app của express để làm real-time với socket.io
-  const server = http.createServer(app);
+  const server = http.createServer(sslOptions, app);
   // Khởi tạo biến io với server và cors
   const io = socketIo(server, { cors: corsOptions });
 
