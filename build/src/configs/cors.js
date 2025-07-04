@@ -16,9 +16,10 @@ const corsOptions = {
     }
     if (env.BUILD_MODE === "production") {
       // Chỉ cho phép các domain được whitelist
-      if (WHITELIST_DOMAINS.includes(origin)) {
-        return callback(null, true);
-      }
+      // if (WHITELIST_DOMAINS.includes(origin)) {
+      //   return callback(null, true);
+      // }
+      return callback(null, true);
     }
 
     // Còn lại từ chối
