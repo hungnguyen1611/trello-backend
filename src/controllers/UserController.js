@@ -35,14 +35,14 @@ const login = async (req, res, next) => {
     // SameSite=Strict: chống tấn công CSRF.
     res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
-      // secure: true,
+      secure: true,
       sameSite: "none",
       maxAge: ms("14 days"),
     });
 
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
-      // secure: true, phải sử dụng https nếu ko có thì trình duyệt sẽ ko gửi cookie lên
+      secure: true, //phải sử dụng https nếu ko có thì trình duyệt sẽ ko gửi cookie lên
       sameSite: "none",
       maxAge: ms("14 days"),
     });
@@ -68,7 +68,7 @@ const refresh_token = async (req, res, next) => {
 
     res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
-      // secure: true,
+      secure: true,
       sameSite: "none",
       maxAge: ms("14 days"),
     });
