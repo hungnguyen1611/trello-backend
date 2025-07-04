@@ -2,6 +2,7 @@ require("module-alias/register");
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
+const path = require("path");
 const {
   CONNECT_DB,
   CLOSE_DB
@@ -52,8 +53,8 @@ const START_SERVER = () => {
   app.use("/v1", APIs_V1);
   app.use(errorHandlingMiddleware);
   const sslOptions = {
-    key: fs.readFileSync("/path/to/key.pem"),
-    cert: fs.readFileSync("/path/to/cert.pem")
+    key: fs.readFileSync(path.join(__dirname, "../../key.pem")),
+    cert: fs.readFileSync(path.join(__dirname, "../../cert.pem"))
   };
   // Tạo một Sever mới bọc thằng app của express để làm real-time với socket.io
   const server = http.createServer(sslOptions, app);
