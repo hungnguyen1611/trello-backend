@@ -42,6 +42,7 @@ const login = async (req, res, next) => {
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: true,
+      //phải sử dụng https nếu ko có thì trình duyệt sẽ ko gửi cookie lên
       sameSite: "none",
       maxAge: ms("14 days")
     });
