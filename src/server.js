@@ -2,6 +2,7 @@ require("module-alias/register");
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
+const path = require("path");
 
 const { CONNECT_DB, CLOSE_DB } = require("./configs/mongodb");
 const exitHook = require("async-exit-hook");
@@ -48,8 +49,8 @@ const START_SERVER = () => {
   app.use(errorHandlingMiddleware);
 
   const sslOptions = {
-    key: fs.readFileSync("/cert.pem"), //private key
-    cert: fs.readFileSync("/key.pem"), //chứng chỉ SSL (certificate)
+    key: fs.readFileSync(path.join(__dirname, "../../key.pem")), // __dirname lấy thư mục hiện tại của file đang chạy vì chạy production là chạy từ trong foler build
+    cert: fs.readFileSync(path.join(__dirname, "../../cert.pem")),
   };
   // Tạo một Sever mới bọc thằng app của express để làm real-time với socket.io
   const server = http.createServer(sslOptions, app);
