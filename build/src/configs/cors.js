@@ -1,0 +1,33 @@
+const ApiError = require("@/utils/ApiError");
+const {
+  WHITELIST_DOMAINS
+} = require("@/utils/constant");
+const {
+  StatusCodes
+} = require("http-status-codes");
+const {
+  env
+} = require("./environment");
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Cho phép Postman hoặc server khác trong môi trường dev
+    if (env.BUILD_MODE === "dev") {
+      return callback(null, true);
+    }
+    if (env.BUILD_MODE === "production") {
+      // Chỉ cho phép các domain được whitelist
+      if (WHITELIST_DOMAINS.includes(origin)) {
+        return callback(null, true);
+      }
+    }
+
+    // Còn lại từ chối
+    return callback(new ApiError(StatusCodes.FORBIDDEN, "Not allowed by our CORS policy"));
+  },
+  credentials: true,
+  // cho phép các yêu cầu cross-origin mang theo cookie hoặc thông tin xác thực khác.
+  optionsSuccessStatus: 200
+};
+module.exports = {
+  corsOptions
+};

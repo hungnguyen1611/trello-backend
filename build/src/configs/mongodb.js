@@ -1,5 +1,3 @@
-// passwork
-
 const {
   MongoClient,
   ServerApiVersion
@@ -7,33 +5,34 @@ const {
 const {
   env
 } = require("./environment");
-
-// t0MEeTPxw8RBEmII
-// useName
-// hungnguyen1611
-
-// uritr
-
-// mongodb+srv://hungnguyen1611:t0MEeTPxw8RBEmII@cluster0hungnguyen.grqzhii.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0hungnguyen
-
-let trelloDB = null;
 const mongoClientInstance = new MongoClient(env.MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
-    deprecationErrorsL: true
+    deprecationErrors: true
   }
 });
+let trelloDB = null;
 const CONNECT_DB = async () => {
-  await mongoClientInstance.connect();
-  trelloDB = mongoClientInstance.db(env.DATABASE_NAME);
+  try {
+    await mongoClientInstance.connect();
+    trelloDB = mongoClientInstance.db(env.DATABASE_NAME);
+    console.log("✅ CONNECT_DB: Kết nối MongoDB thành công!");
+  } catch (error) {
+    throw new Error("❌ CONNECT_DB ERROR: " + error);
+  }
 };
 const GET_DB = () => {
-  if (!trelloDB) throw new Error("Must connect to Mongo first!");
+  if (!trelloDB) {
+    // gọi lại 1 lần ở đây để nhận được db vì khi đẩy lên production(render) trelloDB sẽ bị null
+    const DB = mongoClientInstance.db(env.DATABASE_NAME);
+    if (!DB) throw new Error(`Must connect to Mongo first!`);
+    return DB;
+  }
   return trelloDB;
 };
 const CLOSE_DB = async () => {
-  console.log("4 Disconnecting from Mongo cloud Atlas ! ");
+  console.log("4 Disconnecting from Mongo cloud Atlas !");
   await mongoClientInstance.close();
 };
 module.exports = {
