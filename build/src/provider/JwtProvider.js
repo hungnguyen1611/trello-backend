@@ -10,7 +10,7 @@ const generateToken = async (userInfo, secretSignature, tokenLife) => {
     //  hàm ở bên ngoài biết là hàm bất đồng bộ cần có await (sử dụng await nếu phía dưới còn code hoặc gán giá trị đó cho một biến)
     return JWT.sign(userInfo, secretSignature, {
       algorithm: "HS256",
-      expiresIn: tokenLife,
+      expiresIn: tokenLife
     });
   } catch (error) {
     throw new Error(error);
@@ -29,10 +29,9 @@ const verifyToken = async (token, secretSignature) => {
     throw new Error(error);
   }
 };
-
 module.exports = {
   JwtProvider: {
     generateToken,
-    verifyToken,
-  },
+    verifyToken
+  }
 };
