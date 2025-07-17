@@ -48,12 +48,22 @@ const START_SERVER = () => {
 
   app.use(errorHandlingMiddleware);
 
-  const sslOptions = {
-    key: fs.readFileSync(path.join(__dirname, "../../key.pem")), // __dirname lấy thư mục hiện tại của file đang chạy vì chạy production là chạy từ trong foler build
-    cert: fs.readFileSync(path.join(__dirname, "../../cert.pem")),
-  };
+  // const sslOptions = {
+  //   key: fs.readFileSync(
+  //     path.join(
+  //       __dirname,
+  //       env.BUILD_MODE === "production" ? "../../key.pem" : "../key.pem"
+  //     )
+  //   ), // __dirname lấy thư mục hiện tại của file đang chạy vì chạy production là chạy từ trong foler build
+  //   cert: fs.readFileSync(
+  //     path.join(
+  //       __dirname,
+  //       env.BUILD_MODE === "production" ? "../../cert.pem" : "../cert.pem"
+  //     )
+  //   ),
+  // };
   // Tạo một Sever mới bọc thằng app của express để làm real-time với socket.io
-  const server = http.createServer(sslOptions, app);
+  const server = http.createServer(app);
   // Khởi tạo biến io với server và cors
   const io = socketIo(server, { cors: corsOptions });
 
