@@ -5,6 +5,7 @@ const ApiError = require("@/utils/ApiError");
 const { default: axios } = require("axios");
 const { StatusCodes } = require("http-status-codes");
 const ms = require("ms");
+const { WEBSITE_DOMAIN } = require("../../build/src/utils/constant");
 
 const createUser = async (req, res, next) => {
   try {
@@ -97,7 +98,7 @@ const login_google = async (req, res, next) => {
       sameSite: "none",
       maxAge: ms("14 days"),
     });
-    res.redirect(`http://localhost:3000/welcome?token=${accessToken}`);
+    res.redirect(`${WEBSITE_DOMAIN}/welcome?token=${accessToken}`);
     // Cannot return response to client more than once
     // res.status(StatusCodes.OK).json(result);
   } catch (error) {
