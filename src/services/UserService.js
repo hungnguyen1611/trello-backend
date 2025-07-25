@@ -4,7 +4,7 @@ const { StatusCodes } = require("http-status-codes");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const { pickUser } = require("@/utils/formatters");
-const { WEBSITE_DOMAIN } = require("@/utils/constant");
+const { WEBSITE_DOMAIN, API_ROOT } = require("@/utils/constant");
 const { BrevoProvider } = require("@/provider/BrevoProvider");
 const { JwtProvider } = require("@/provider/JwtProvider");
 const { env } = require("@/configs/environment");
@@ -222,7 +222,7 @@ const login_google = async (code) => {
         code,
         client_id: env.CLIENT_ID_GOOGLE,
         client_secret: env.CLIENT_SECRET_GOOGLE,
-        redirect_uri: env.REDIRECT_URI_GOOGLE,
+        redirect_uri: `${API_ROOT}/v1/users/login_google`,
         grant_type: "authorization_code",
       }
     );
