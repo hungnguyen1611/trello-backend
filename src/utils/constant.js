@@ -5,6 +5,7 @@ const WHITELIST_DOMAINS = [
   "https://trello-web-flame.vercel.app",
   "192.168.0.185", // domain local
   "https://www.trello.site",
+  "https://trello.site",
 ];
 
 const BOARD_TYPE = {
