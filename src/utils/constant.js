@@ -1,5 +1,4 @@
 const { env } = require("@/configs/environment");
-import { API_ROOT } from "./../../../trello/src/utils/constants";
 
 const WHITELIST_DOMAINS = [
   "https://trello-web-flame.vercel.app",
