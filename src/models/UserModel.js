@@ -13,14 +13,28 @@ const USER_COLLECTION_SCHEMA = Joi.object({
     .required()
     .pattern(EMAIL_RULE)
     .message(EMAIL_RULE_MESSAGE),
-  password: Joi.string().required(),
+  provider: Joi.string().valid("local", "google", "facebook").default("local"),
+  providerId: Joi.string().when("provider", {
+    is: "google",
+    then: Joi.required(),
+    otherwise: Joi.string().default(null),
+  }),
+  password: Joi.string().when("provider", {
+    is: "local",
+    then: Joi.required(),
+    otherwise: Joi.string().default(null),
+  }),
   username: Joi.string().required().trim().strict(),
   displayName: Joi.string().required().trim().strict(),
   avatar: Joi.string().default(null),
   role: Joi.string()
     .valid(USER_ROLES.CLIENT, USER_ROLES.ADMIN)
     .default(USER_ROLES.CLIENT),
-  isActive: Joi.boolean().default(false),
+  isActive: Joi.boolean().when("provider", {
+    is: "local",
+    then: Joi.boolean().default(false),
+    otherwise: Joi.boolean().default(true),
+  }),
   verifyToken: Joi.string(),
   createdAt: Joi.date().timestamp("javascript").default(Date.now),
   updatedAt: Joi.date().timestamp("javascript").default(null),

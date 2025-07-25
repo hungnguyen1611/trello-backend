@@ -1,4 +1,5 @@
 const { env } = require("@/configs/environment");
+import { API_ROOT } from "./../../../trello/src/utils/constants";
 
 const WHITELIST_DOMAINS = [
   "https://trello-web-flame.vercel.app",
@@ -33,6 +34,10 @@ const CARD_MEMBER_ACTIONS = {
   REMOVE: "REMOVE",
   ADD: "ADD",
 };
+
+const API_ROOT =
+  env.BUILD_MODE === "dev" ? "http://localhost:5000" : "https://trello.site";
+
 module.exports = {
   WHITELIST_DOMAINS, //  những domains được phép truy cập đến sever
   BOARD_TYPE,
@@ -42,4 +47,5 @@ module.exports = {
   INVITATION_TYPES,
   BOARD_INVITATION_STATUS,
   CARD_MEMBER_ACTIONS,
+  API_ROOT,
 };

@@ -9,6 +9,7 @@ const { BrevoProvider } = require("@/provider/BrevoProvider");
 const { JwtProvider } = require("@/provider/JwtProvider");
 const { env } = require("@/configs/environment");
 const { CloudinaryProvider } = require("@/provider/CloudinaryProvider");
+const { default: axios } = require("axios");
 
 const createUser = async (reqBody) => {
   try {
@@ -212,6 +213,94 @@ const update = async (userId, reqBody, userAvatarFile) => {
     throw error;
   }
 };
+
+const login_google = async (code) => {
+  try {
+    const tokenResponse = await axios.post(
+      "https://oauth2.googleapis.com/token",
+      {
+        code,
+        client_id: env.CLIENT_ID_GOOGLE,
+        client_secret: env.CLIENT_SECRET_GOOGLE,
+        redirect_uri: env.REDIRECT_URI_GOOGLE,
+        grant_type: "authorization_code",
+      }
+    );
+
+    const { access_token } = tokenResponse.data;
+
+    const userInfo = await axios.get(
+      "https://www.googleapis.com/oauth2/v2/userinfo",
+      {
+        headers: { Authorization: `Bearer ${access_token}` },
+      }
+    );
+
+    const user = userInfo.data;
+
+    const existUser = await userModel.findOneByEmail(user.email);
+
+    if (existUser) {
+      const accessToken = await JwtProvider.generateToken(
+        pickUser(existUser),
+        env.ACCESS_TOKEN_SECRET_SIGNATURE,
+        env.ACCESS_TOKEN_LIFE
+        // 5
+      );
+
+      const refreshToken = await JwtProvider.generateToken(
+        pickUser(existUser),
+        env.REFRESH_TOKEN_SECRET_SIGNATURE,
+        env.REFRESH_TOKEN_LIFE
+      );
+
+      // res.redirect(`http://localhost:3000/welcome?token=${accessToken}`);
+
+      return { accessToken, refreshToken, ...pickUser(existUser) };
+    } else {
+      if (user?.picture) {
+        const uploadResult = await CloudinaryProvider.streamUpload(
+          user.picture,
+          "users"
+        );
+
+        user.picture = uploadResult.secure_url;
+      }
+
+      const nameFromEmail = user.email.split("@")[0];
+
+      const newUser = await userModel.createUser({
+        email: user.email,
+        provider: "google",
+        providerId: user.id,
+        username: nameFromEmail,
+        displayName: user.name,
+        avatar: user.picture,
+        isActive: true,
+      });
+
+      const infoUser = await userModel.findOneById(newUser.insertedId);
+
+      if (infoUser) {
+        const accessToken = await JwtProvider.generateToken(
+          pickUser(infoUser),
+          env.ACCESS_TOKEN_SECRET_SIGNATURE,
+          env.ACCESS_TOKEN_LIFE
+        );
+
+        const refreshToken = await JwtProvider.generateToken(
+          pickUser(infoUser),
+          env.REFRESH_TOKEN_SECRET_SIGNATURE,
+          env.REFRESH_TOKEN_LIFE
+        );
+        return { accessToken, refreshToken, ...pickUser(newUser) };
+      }
+    }
+  } catch (error) {
+    console.error("Google login error", error.response?.data || error.message);
+    throw error;
+  }
+};
 module.exports = {
   userService: {
     createUser,
@@ -219,5 +308,6 @@ module.exports = {
     login,
     refreshToken,
     update,
+    login_google,
   },
 };

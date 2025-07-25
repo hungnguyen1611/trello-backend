@@ -1,7 +1,11 @@
+const { env } = require("@/configs/environment");
+const { JwtProvider } = require("@/provider/JwtProvider");
 const { userService } = require("@/services/UserService");
 const ApiError = require("@/utils/ApiError");
+const { default: axios } = require("axios");
 const { StatusCodes } = require("http-status-codes");
 const ms = require("ms");
+const { WEBSITE_DOMAIN } = require("../../build/src/utils/constant");
 
 const createUser = async (req, res, next) => {
   try {
@@ -47,6 +51,56 @@ const login = async (req, res, next) => {
       maxAge: ms("14 days"),
     });
     res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// const login_google = async (req, res, next) => {
+//   try {
+//     const code = req.query.code;
+
+//     console.log("code: ", code);
+
+//     if (!code)
+//       return res
+//         .status(StatusCodes.BAD_REQUEST)
+//         .json({ message: "Missing code" });
+//     const result = await userService.login_google();
+//     res.status(StatusCodes.OK).json(result);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+// controllers/auth.controller.js
+
+const login_google = async (req, res, next) => {
+  try {
+    const code = req.query.code;
+
+    if (!code)
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Missing code" });
+    const result = await userService.login_google(code);
+    const { accessToken, refreshToken } = result;
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: ms("14 days"),
+    });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: ms("14 days"),
+    });
+    res.redirect(`${WEBSITE_DOMAIN}/welcome?token=${accessToken}`);
+    // Cannot return response to client more than once
+    // res.status(StatusCodes.OK).json(result);
   } catch (error) {
     next(error);
   }
@@ -107,5 +161,6 @@ module.exports = {
     logout,
     refresh_token,
     update,
+    login_google,
   },
 };
