@@ -22,6 +22,8 @@ Router.route("/login").post(userValidation.loggin, userController.login);
 
 Router.route("/login_google").get(userController.login_google);
 
+Router.route("/login_facebook").get(userController.login_facebook);
+
 Router.route("/logout").delete(userController.logout);
 
 Router.route("/refresh_token").get(userController.refresh_token);
