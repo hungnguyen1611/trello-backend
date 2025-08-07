@@ -18,6 +18,7 @@ const cookieParser = require("cookie-parser");
 const socketIo = require("socket.io");
 const http = require("http");
 const inviUserToBoardSocket = require("./socket/inviUserToBoardSocket");
+const commentCard = require("./socket/commentCard");
 
 const START_SERVER = () => {
   const app = express();
@@ -70,6 +71,8 @@ const START_SERVER = () => {
   io.on("connection", (socket) => {
     // Gọi gác socket tùy theo tính năng ở đây
     inviUserToBoardSocket(socket);
+
+    commentCard(socket);
   });
 
   if (env.BUILD_MODE === "production") {

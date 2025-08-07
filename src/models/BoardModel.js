@@ -277,7 +277,8 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
                   $skip: pagingSkipValue(page, itemsPerPage),
                 },
                 {
-                  // Giới hạn tối đa số lượng bảng ghi trả về trên một page
+                  // Giới hạn tối đa số lượng
+                  //  bảng ghi trả về trên một page
                   $limit: itemsPerPage,
                 },
               ],

@@ -301,6 +301,84 @@ const login_google = async (code) => {
     throw error;
   }
 };
+
+const login_facebook = async (reqBody) => {
+  const { accessToken } = reqBody;
+
+  if (!accessToken) {
+    throw new ApiError(StatusCodes.NOT_ACCEPTABLE, "Missing access token");
+  }
+
+  try {
+    // Gọi đến Facebook API để lấy user info
+
+    const fbUser = await axios.get(
+      `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${accessToken}`
+    );
+
+    if (fbUser.error) {
+      throw new ApiError(StatusCodes.NOT_ACCEPTABLE, fbUser.error.message);
+    }
+
+    const existUser = await userModel.findOneByEmail(fbUser.data.email);
+
+    if (existUser) {
+      const accessToken = await JwtProvider.generateToken(
+        pickUser(existUser),
+        env.ACCESS_TOKEN_SECRET_SIGNATURE,
+        env.ACCESS_TOKEN_LIFE
+      );
+
+      const refreshToken = await JwtProvider.generateToken(
+        pickUser(existUser),
+        env.REFRESH_TOKEN_SECRET_SIGNATURE,
+        env.REFRESH_TOKEN_LIFE
+      );
+
+      return { accessToken, refreshToken, ...pickUser(existUser) };
+    } else {
+      if (fbUser.data.picture) {
+        const uploadResult = await CloudinaryProvider.streamUpload(
+          fbUser.data.picture.data.url,
+          "users"
+        );
+
+        fbUser.data.picture = uploadResult.secure_url;
+      }
+
+      const nameFromEmail = fbUser.data.email.split("@")[0];
+
+      const newUser = await userModel.createUser({
+        email: fbUser.data.email,
+        provider: "facebook",
+        providerId: fbUser.data.id,
+        username: nameFromEmail,
+        displayName: fbUser.data.name,
+        avatar: fbUser.data.picture,
+        isActive: true,
+      });
+
+      const infoUser = await userModel.findOneById(newUser.insertedId);
+
+      if (infoUser) {
+        const accessToken = await JwtProvider.generateToken(
+          pickUser(infoUser),
+          env.ACCESS_TOKEN_SECRET_SIGNATURE,
+          env.ACCESS_TOKEN_LIFE
+        );
+
+        const refreshToken = await JwtProvider.generateToken(
+          pickUser(infoUser),
+          env.REFRESH_TOKEN_SECRET_SIGNATURE,
+          env.REFRESH_TOKEN_LIFE
+        );
+        return { accessToken, refreshToken, ...pickUser(infoUser) };
+      }
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
 module.exports = {
   userService: {
     createUser,
@@ -309,5 +387,6 @@ module.exports = {
     refreshToken,
     update,
     login_google,
+    login_facebook,
   },
 };

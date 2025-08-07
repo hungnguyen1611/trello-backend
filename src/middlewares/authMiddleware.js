@@ -13,6 +13,7 @@ const isAuthorized = async (req, res, next) => {
     next(
       new ApiError(StatusCodes.UNAUTHORIZED, "unauthorized (token not fond)!")
     );
+    return;
   }
   try {
     // Thực hiện giải mã Token xem nó có hợp lệ hay không
